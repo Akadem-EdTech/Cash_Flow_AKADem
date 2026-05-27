@@ -1,0 +1,1395 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AKADEM · CashFlow Manager</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --brand:#E8490F;--dark:#2D3142;--light:#F8F7F4;--gray:#6B6F7E;--border:#E8E8E5;
+  --green:#27AE60;--red:#E74C3C;--yellow:#F39C12;--blue:#2980B9;
+  --green-bg:#E8F5E9;--red-bg:#FFEBEE;--yellow-bg:#FFF8E1;--blue-bg:#E3F2FD;
+}
+*{margin:0;padding:0;box-sizing:border-box;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif}
+body{background:#EEECEA;color:var(--dark);font-size:13px}
+.shell{display:flex;height:100vh;overflow:hidden}
+
+.sb{width:215px;background:var(--dark);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto}
+.sb-logo{padding:16px 14px 12px;border-bottom:1px solid rgba(255,255,255,.07)}
+.sb-owl{font-size:22px;margin-bottom:2px}
+.sb-name{font-size:17px;font-weight:800;color:#fff}.sb-name span{color:var(--brand)}
+.sb-tagline{font-size:9px;color:rgba(255,255,255,.28);text-transform:uppercase;letter-spacing:.1em;margin-top:1px}
+.sb-user{margin-top:6px;padding:6px 8px;background:rgba(255,255,255,.06);border-radius:7px;font-size:10px;color:rgba(255,255,255,.5)}
+.sb-user strong{color:rgba(255,255,255,.8);display:block}
+.sb-sect{padding:10px 0 2px}
+.sb-lbl{font-size:9px;font-weight:700;color:rgba(255,255,255,.2);text-transform:uppercase;letter-spacing:.1em;padding:0 13px 4px}
+.nb{display:flex;align-items:center;gap:7px;padding:8px 13px;font-size:12px;color:rgba(255,255,255,.42);cursor:pointer;border:none;background:none;width:100%;text-align:left;border-left:3px solid transparent;transition:all .12s}
+.nb:hover{color:#fff;background:rgba(255,255,255,.04)}
+.nb.on{color:#fff;border-left-color:var(--brand);background:rgba(232,73,15,.09)}
+.nb .ic{font-size:13px}
+.nb .ct{display:inline-block;background:var(--brand);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;margin-left:auto}
+.sb-foot{margin-top:auto;padding:10px 13px;border-top:1px solid rgba(255,255,255,.07);font-size:10px;color:rgba(255,255,255,.22);line-height:1.6}
+
+.main{flex:1;overflow-y:auto;display:flex;flex-direction:column}
+.topbar{background:#fff;border-bottom:1px solid var(--border);padding:0 20px;height:48px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.top-title{font-size:14px;font-weight:700}
+.top-right{display:flex;align-items:center;gap:8px}
+.page{padding:16px 20px;flex:1}
+.page.hidden{display:none}
+
+/* LOGIN */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#2D3142 60%,#1a1e2e)}
+.login-box{background:#fff;border-radius:18px;padding:36px 32px;width:360px;box-shadow:0 20px 60px rgba(0,0,0,.25);text-align:center}
+.login-owl{font-size:48px;margin-bottom:10px}
+.login-brand{font-size:26px;font-weight:800;margin-bottom:4px}.login-brand span{color:var(--brand)}
+.login-sub{font-size:11px;color:var(--gray);margin-bottom:24px}
+.login-tabs{display:flex;gap:0;border:1px solid var(--border);border-radius:8px;overflow:hidden;margin-bottom:18px}
+.ltab{flex:1;padding:8px;font-size:12px;font-weight:600;cursor:pointer;background:#fff;border:none;color:var(--gray)}
+.ltab.on{background:var(--brand);color:#fff}
+
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:16px}
+.kpi{background:#fff;border-radius:10px;padding:13px 15px;border:1px solid var(--border);border-top:3px solid var(--border)}
+.kpi.ok{border-top-color:var(--green)}.kpi.warn{border-top-color:var(--yellow)}.kpi.bad{border-top-color:var(--red)}.kpi.info{border-top-color:var(--blue)}.kpi.brand{border-top-color:var(--brand)}
+.kpi-lbl{font-size:10px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}
+.kpi-val{font-size:19px;font-weight:800}
+.kpi-sub{font-size:10px;color:var(--gray);margin-top:2px}
+
+/* PANEL */
+.panel{background:#fff;border-radius:10px;border:1px solid var(--border);padding:15px;margin-bottom:13px}
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:11px}
+.pt{font-size:13px;font-weight:700}
+.pa{font-size:11px;color:var(--brand);cursor:pointer;font-weight:600}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.g75{display:grid;grid-template-columns:7fr 5fr;gap:12px;margin-bottom:12px}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;font-size:12px}
+.tbl th{text-align:left;padding:7px 8px;color:var(--gray);font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border)}
+.tbl td{padding:7px 8px;border-bottom:1px solid #F4F4F2;vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#FAFAF8}
+.sub{font-size:10px;color:var(--gray)}
+
+/* BADGE */
+.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700}
+.bg-green{background:var(--green-bg);color:#1B5E20}.bg-red{background:var(--red-bg);color:#B71C1C}
+.bg-yellow{background:var(--yellow-bg);color:#E65100}.bg-blue{background:var(--blue-bg);color:#0D47A1}
+.bg-brand{background:rgba(232,73,15,.1);color:var(--brand)}.bg-gray{background:#F0F0EE;color:#555}
+.bg-purple{background:#F3E5F5;color:#4A148C}
+
+/* CODE BADGE */
+.code-badge{font-family:monospace;font-size:10px;background:#F0F0EE;padding:3px 7px;border-radius:5px;color:var(--dark);font-weight:700;letter-spacing:.05em}
+
+/* MODAL */
+.mo{display:none;position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:200;align-items:center;justify-content:center}
+.mo.open{display:flex}
+.mbox{background:#fff;border-radius:14px;width:560px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.22)}
+.mbox.wide{width:680px}
+.mh{padding:16px 18px 0;display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.mh h3{font-size:14px;font-weight:700}
+.mc{padding:0 18px 18px}
+.mclose{background:none;border:none;font-size:18px;cursor:pointer;color:var(--gray)}
+
+/* FORM */
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:9px}
+.frow.full{grid-template-columns:1fr}
+.frow.tri{grid-template-columns:1fr 1fr 1fr}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fl{font-size:11px;font-weight:700;color:var(--gray)}
+.fi,.fs{padding:8px 10px;border:1px solid var(--border);border-radius:7px;font-size:12px;outline:none;transition:border .12s;background:#fff;width:100%}
+.fi:focus,.fs:focus{border-color:var(--brand)}
+.fi.mono{font-family:monospace;font-size:11px;background:#F8F8F8;color:var(--dark)}
+.btn-row{display:flex;justify-content:flex-end;gap:7px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+
+/* BUTTONS */
+.btn{padding:8px 15px;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer}
+.btn-p{background:var(--brand);color:#fff}
+.btn-s{background:#fff;color:var(--dark);border:1px solid var(--border)}
+.btn-d{background:var(--red-bg);color:var(--red);border:1px solid #FFCDD2}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-g{background:var(--green);color:#fff}
+
+/* UPLOAD */
+.upload-zone{border:2px dashed var(--border);border-radius:10px;padding:24px;text-align:center;cursor:pointer;transition:all .15s}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--brand);background:rgba(232,73,15,.03)}
+.upload-zone input{display:none}
+
+/* PROGRESS */
+.pbar{height:5px;background:#ECECEC;border-radius:3px;overflow:hidden;margin-top:3px}
+.pfill{height:100%;border-radius:3px}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:12px}
+.tab{padding:8px 13px;font-size:12px;font-weight:600;cursor:pointer;color:var(--gray);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.on{color:var(--brand);border-bottom-color:var(--brand)}
+
+/* CFG CARD */
+.cfg-card{background:#fff;border-radius:10px;border:1px solid var(--border);padding:14px;cursor:pointer;transition:box-shadow .12s;text-align:center}
+.cfg-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.07)}
+
+/* TOGGLE */
+.tgl-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--border)}
+.tgl-row:last-child{border-bottom:none}
+.toggle{position:relative;display:inline-block;width:36px;height:19px}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;cursor:pointer;inset:0;background:#DDD;border-radius:20px;transition:.2s}
+.slider:before{content:'';position:absolute;height:13px;width:13px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+input:checked+.slider{background:var(--brand)}
+input:checked+.slider:before{transform:translateX(17px)}
+
+/* ALERT */
+.al{border-radius:9px;padding:10px 12px;margin-bottom:8px;display:flex;gap:8px;font-size:12px}
+.al.danger{background:var(--red-bg);border-left:3px solid var(--red)}
+.al.warning{background:var(--yellow-bg);border-left:3px solid var(--yellow)}
+.al.info{background:var(--blue-bg);border-left:3px solid var(--blue)}
+.al-t{font-weight:700;margin-bottom:1px}
+
+/* OC CARD */
+.oc-card{background:#fff;border-radius:10px;border:1px solid var(--border);padding:14px;margin-bottom:10px}
+.oc-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
+.oc-num{font-family:monospace;font-size:13px;font-weight:700;color:var(--brand)}
+
+/* WIZARD */
+.wizard{background:#fff;border-radius:14px;border:2px dashed var(--brand);padding:28px;text-align:center;margin-bottom:16px}
+
+/* EMPTY */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;text-align:center;color:var(--gray)}
+.empty .ei{font-size:32px;opacity:.35;margin-bottom:10px}
+
+.cw{position:relative;width:100%}
+
+/* PROCESSING */
+.processing{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--blue-bg);border-radius:8px;font-size:12px;color:var(--blue)}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin{display:inline-block;animation:spin 1s linear infinite}
+
+/* SEPARATOR */
+.sep{height:1px;background:var(--border);margin:12px 0}
+
+/* tipo badge colors */
+.tipo-gestion{background:#E8F5E9;color:#1B5E20}
+.tipo-liderazgo{background:#E3F2FD;color:#0D47A1}
+.tipo-seguridad{background:#FFF8E1;color:#E65100}
+.tipo-normativa{background:#F3E5F5;color:#4A148C}
+.tipo-operacional{background:#E8F5E9;color:#2E7D32}
+.tipo-lms{background:#E3F2FD;color:#1565C0}
+.tipo-digital{background:rgba(232,73,15,.1);color:var(--brand)}
+.tipo-tecnologia{background:#F0F4FF;color:#283593}
+</style>
+</head>
+<body>
+
+<!-- ========== LOGIN ========== -->
+<div id="login-screen" class="login-wrap">
+  <div class="login-box">
+    <div class="login-owl">🦉</div>
+    <div class="login-brand"><span>AKA</span>DEM</div>
+    <div class="login-sub">CashFlow Manager · Acceso interno</div>
+    <div class="login-tabs">
+      <button class="ltab on" onclick="switchLoginTab('login',this)">Iniciar sesión</button>
+      <button class="ltab" onclick="switchLoginTab('register',this)">Crear cuenta</button>
+    </div>
+    <!-- LOGIN FORM -->
+    <div id="ltab-login">
+      <div class="fg" style="margin-bottom:10px;text-align:left">
+        <label class="fl">Email</label>
+        <input class="fi" id="l-email" type="email" placeholder="usuario@akadem.cl" value="admin@akadem.cl">
+      </div>
+      <div class="fg" style="margin-bottom:16px;text-align:left">
+        <label class="fl">Contraseña</label>
+        <input class="fi" id="l-pass" type="password" placeholder="••••••••" value="akadem2025">
+      </div>
+      <button class="btn btn-p" style="width:100%;padding:10px" onclick="doLogin()">Ingresar →</button>
+      <div style="font-size:10px;color:var(--gray);margin-top:10px">Demo: admin@akadem.cl / akadem2025</div>
+    </div>
+    <!-- REGISTER FORM -->
+    <div id="ltab-register" style="display:none">
+      <div class="frow" style="margin-bottom:9px">
+        <div class="fg" style="text-align:left"><label class="fl">Nombre</label><input class="fi" id="r-nombre" placeholder="Juan"></div>
+        <div class="fg" style="text-align:left"><label class="fl">Apellido</label><input class="fi" id="r-apellido" placeholder="Pérez"></div>
+      </div>
+      <div class="fg" style="margin-bottom:9px;text-align:left"><label class="fl">Email</label><input class="fi" id="r-email" type="email" placeholder="usuario@akadem.cl"></div>
+      <div class="fg" style="margin-bottom:9px;text-align:left"><label class="fl">Contraseña</label><input class="fi" id="r-pass" type="password" placeholder="••••••••"></div>
+      <div class="fg" style="margin-bottom:16px;text-align:left">
+        <label class="fl">Rol</label>
+        <select class="fs" id="r-rol"><option value="admin">Administrador</option><option value="financiero">Financiero</option><option value="viewer">Solo lectura</option></select>
+      </div>
+      <button class="btn btn-p" style="width:100%;padding:10px" onclick="doRegister()">Crear cuenta →</button>
+    </div>
+    <div id="login-error" style="color:var(--red);font-size:11px;margin-top:8px;display:none"></div>
+  </div>
+</div>
+
+<!-- ========== APP ========== -->
+<div id="app-screen" class="shell" style="display:none">
+
+<!-- SIDEBAR -->
+<aside class="sb">
+  <div class="sb-logo">
+    <div class="sb-owl">🦉</div>
+    <div class="sb-name"><span>AKA</span>DEM</div>
+    <div class="sb-tagline">CashFlow Manager</div>
+    <div class="sb-user" id="sb-userinfo">
+      <strong id="sb-username">—</strong>
+      <span id="sb-userrole">—</span>
+    </div>
+  </div>
+  <div class="sb-sect">
+    <div class="sb-lbl">Panel</div>
+    <button class="nb on" data-page="dashboard"><span class="ic">📊</span> Dashboard</button>
+    <button class="nb" data-page="proyectos"><span class="ic">📁</span> Proyectos <span class="ct" id="ct-proy">0</span></button>
+    <button class="nb" data-page="flujo"><span class="ic">💰</span> Flujo de Caja</button>
+    <button class="nb" data-page="oc"><span class="ic">📄</span> Órdenes de Compra <span class="ct" id="ct-oc">0</span></button>
+    <button class="nb" data-page="proyeccion"><span class="ic">📈</span> Proyección</button>
+  </div>
+  <div class="sb-sect">
+    <div class="sb-lbl">Mantenedores</div>
+    <button class="nb" data-page="m-clientes"><span class="ic">🏢</span> Clientes <span class="ct" id="ct-cli">0</span></button>
+    <button class="nb" data-page="m-cuentas"><span class="ic">🏦</span> Cuentas <span class="ct" id="ct-cta">0</span></button>
+    <button class="nb" data-page="m-personas"><span class="ic">👥</span> Personas <span class="ct" id="ct-per">0</span></button>
+    <button class="nb" data-page="m-categorias"><span class="ic">🏷</span> Categorías</button>
+  </div>
+  <div class="sb-sect">
+    <div class="sb-lbl">Sistema</div>
+    <button class="nb" data-page="config"><span class="ic">⚙️</span> Configuración</button>
+    <button class="nb" data-page="alertas"><span class="ic">🔔</span> Alertas <span class="ct" id="ct-alert">0</span></button>
+    <button class="nb" data-page="exportar"><span class="ic">📤</span> Exportar datos</button>
+  </div>
+  <div class="sb-foot">
+    AKADEM S.A. · RUT 76.XXX.XXX-X<br>
+    administracion@akadem.cl<br>
+    <span style="color:rgba(255,255,255,.4)">v2.0 · 2025</span>
+    <div style="margin-top:8px"><button class="btn btn-d btn-sm" onclick="doLogout()" style="width:100%;font-size:10px">🚪 Cerrar sesión</button></div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="top-title" id="page-title">Dashboard</div>
+    <div class="top-right">
+      <select class="fi" style="width:auto;padding:5px 10px;font-size:11px" id="sel-periodo">
+        <option value="mes">Este mes</option>
+        <option value="trim">Trimestre</option>
+        <option value="año">Año completo</option>
+      </select>
+      <button class="btn btn-s btn-sm" onclick="openModal('mo-oc')">📄 Nueva OC</button>
+      <button class="btn btn-p btn-sm" onclick="openModal('mo-tx')">+ Transacción</button>
+    </div>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="page-dashboard" class="page"><div id="dash-content"></div></div>
+
+  <!-- PROYECTOS -->
+  <div id="page-proyectos" class="page hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
+      <div><div style="font-size:15px;font-weight:700">Proyectos AKADEM</div><div class="sub" id="proy-sub">Sin proyectos</div></div>
+      <button class="btn btn-p btn-sm" onclick="openModal('mo-proy')">+ Nuevo Proyecto</button>
+    </div>
+    <div class="tabs">
+      <div class="tab on" onclick="filterProy('todos',this)">Todos</div>
+      <div class="tab" onclick="filterProy('activo',this)">Activos</div>
+      <div class="tab" onclick="filterProy('riesgo',this)">En riesgo</div>
+      <div class="tab" onclick="filterProy('cerrado',this)">Cerrados</div>
+    </div>
+    <div id="proy-list"></div>
+  </div>
+
+  <!-- FLUJO -->
+  <div id="page-flujo" class="page hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
+      <div><div style="font-size:15px;font-weight:700">Flujo de Caja</div><div class="sub">Todos los movimientos registrados</div></div>
+      <div style="display:flex;gap:7px">
+        <select class="fi" style="width:auto;padding:5px 10px;font-size:11px" id="flujo-filtro" onchange="renderFlujo()">
+          <option value="">Todos</option><option value="ingreso">Ingresos</option><option value="egreso">Egresos</option>
+        </select>
+        <button class="btn btn-p btn-sm" onclick="openModal('mo-tx')">+ Registrar</button>
+      </div>
+    </div>
+    <div id="flujo-kpis"></div>
+    <div class="panel"><div class="ph"><div class="pt">Movimientos</div></div><div id="flujo-tabla"></div></div>
+  </div>
+
+  <!-- ÓRDENES DE COMPRA -->
+  <div id="page-oc" class="page hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
+      <div><div style="font-size:15px;font-weight:700">Órdenes de Compra</div><div class="sub">Documentos subidos · Extracción automática de datos</div></div>
+      <button class="btn btn-p btn-sm" onclick="openModal('mo-oc')">📄 Subir OC</button>
+    </div>
+    <div id="oc-list"></div>
+  </div>
+
+  <!-- PROYECCIÓN -->
+  <div id="page-proyeccion" class="page hidden">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px">Proyección Financiera</div>
+    <div class="sub" style="margin-bottom:14px">Escenarios automáticos según datos reales y configuración</div>
+    <div id="proyeccion-content"></div>
+  </div>
+
+  <!-- CLIENTES -->
+  <div id="page-m-clientes" class="page hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
+      <div><div style="font-size:15px;font-weight:700">Clientes</div><div class="sub">Empresas contratantes</div></div>
+      <button class="btn btn-p btn-sm" onclick="openModal('mo-cli')">+ Nuevo Cliente</button>
+    </div>
+    <div class="panel"><div id="cli-tabla"></div></div>
+  </div>
+
+  <!-- CUENTAS -->
+  <div id="page-m-cuentas" class="page hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
+      <div><div style="font-size:15px;font-weight:700">Cuentas & Cajas</div><div class="sub">Fondos, cuentas bancarias y cajas</div></div>
+      <button class="btn btn-p btn-sm" onclick="openModal('mo-cta')">+ Nueva Cuenta</button>
+    </div>
+    <div id="cuentas-grid"></div>
+  </div>
+
+  <!-- PERSONAS -->
+  <div id="page-m-personas" class="page hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
+      <div><div style="font-size:15px;font-weight:700">Personas / Recursos</div><div class="sub">Staff, freelancers y colaboradores</div></div>
+      <button class="btn btn-p btn-sm" onclick="openModal('mo-per')">+ Nueva Persona</button>
+    </div>
+    <div class="panel"><div id="per-tabla"></div></div>
+  </div>
+
+  <!-- CATEGORÍAS -->
+  <div id="page-m-categorias" class="page hidden">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:13px">
+      <div><div style="font-size:15px;font-weight:700">Categorías</div><div class="sub">Clasificación de movimientos</div></div>
+      <button class="btn btn-p btn-sm" onclick="openModal('mo-cat')">+ Nueva Categoría</button>
+    </div>
+    <div class="g2">
+      <div class="panel"><div class="ph"><div class="pt" style="color:var(--green)">📥 Ingresos</div></div><div id="cat-ing"></div></div>
+      <div class="panel"><div class="ph"><div class="pt" style="color:var(--red)">📤 Egresos</div></div><div id="cat-egr"></div></div>
+    </div>
+  </div>
+
+  <!-- CONFIG -->
+  <div id="page-config" class="page hidden">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px">Configuración del sistema</div>
+    <div class="sub" style="margin-bottom:16px">Empresa fija: AKADEM S.A. — Todos los ajustes del sistema</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:16px">
+      <div class="cfg-card" onclick="openModal('mo-cfg-empresa')"><div style="font-size:26px;margin-bottom:6px">🏢</div><div style="font-size:11px;font-weight:700">Datos AKADEM</div><div class="sub">Info empresa fija</div></div>
+      <div class="cfg-card" onclick="openModal('mo-cfg-flujo')"><div style="font-size:26px;margin-bottom:6px">⚙️</div><div style="font-size:11px;font-weight:700">Parámetros flujo</div><div class="sub">Mínimos y umbrales</div></div>
+      <div class="cfg-card" onclick="openModal('mo-cfg-proy')"><div style="font-size:26px;margin-bottom:6px">📈</div><div style="font-size:11px;font-weight:700">Proyección</div><div class="sub">Tasas y escenarios</div></div>
+      <div class="cfg-card" onclick="openModal('mo-cfg-kpis')"><div style="font-size:26px;margin-bottom:6px">🎯</div><div style="font-size:11px;font-weight:700">Metas & KPIs</div><div class="sub">Objetivos financieros</div></div>
+    </div>
+    <div class="panel"><div class="ph"><div class="pt">Usuarios del sistema</div><button class="btn btn-s btn-sm" onclick="switchLoginTab('register',null,true)">+ Usuario</button></div><div id="users-tabla"></div></div>
+    <div class="panel"><div class="ph"><div class="pt">Resumen configuración activa</div></div><div id="cfg-resumen"></div></div>
+  </div>
+
+  <!-- ALERTAS -->
+  <div id="page-alertas" class="page hidden">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px">Centro de Alertas</div>
+    <div class="sub" style="margin-bottom:14px">Generadas automáticamente según umbrales configurados</div>
+    <div id="alertas-lista"></div>
+  </div>
+
+  <!-- EXPORTAR -->
+  <div id="page-exportar" class="page hidden">
+    <div style="font-size:15px;font-weight:700;margin-bottom:4px">Exportar datos</div>
+    <div class="sub" style="margin-bottom:16px">Descarga tus datos en CSV / JSON para planilla o base de datos</div>
+    <div class="g3">
+      <div class="panel" style="text-align:center">
+        <div style="font-size:28px;margin-bottom:8px">📁</div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:4px">Proyectos</div>
+        <div class="sub" style="margin-bottom:10px">Todos los proyectos con código</div>
+        <button class="btn btn-p btn-sm" style="width:100%" onclick="exportar('proyectos')">⬇ CSV</button>
+        <button class="btn btn-s btn-sm" style="width:100%;margin-top:5px" onclick="exportarJSON('proyectos')">⬇ JSON</button>
+      </div>
+      <div class="panel" style="text-align:center">
+        <div style="font-size:28px;margin-bottom:8px">💰</div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:4px">Transacciones</div>
+        <div class="sub" style="margin-bottom:10px">Flujo de caja completo</div>
+        <button class="btn btn-p btn-sm" style="width:100%" onclick="exportar('transacciones')">⬇ CSV</button>
+        <button class="btn btn-s btn-sm" style="width:100%;margin-top:5px" onclick="exportarJSON('transacciones')">⬇ JSON</button>
+      </div>
+      <div class="panel" style="text-align:center">
+        <div style="font-size:28px;margin-bottom:8px">📄</div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:4px">Órdenes de Compra</div>
+        <div class="sub" style="margin-bottom:10px">OC subidas y procesadas</div>
+        <button class="btn btn-p btn-sm" style="width:100%" onclick="exportar('oc')">⬇ CSV</button>
+        <button class="btn btn-s btn-sm" style="width:100%;margin-top:5px" onclick="exportarJSON('oc')">⬇ JSON</button>
+      </div>
+      <div class="panel" style="text-align:center">
+        <div style="font-size:28px;margin-bottom:8px">🏢</div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:4px">Clientes</div>
+        <div class="sub" style="margin-bottom:10px">Base de clientes</div>
+        <button class="btn btn-p btn-sm" style="width:100%" onclick="exportar('clientes')">⬇ CSV</button>
+        <button class="btn btn-s btn-sm" style="width:100%;margin-top:5px" onclick="exportarJSON('clientes')">⬇ JSON</button>
+      </div>
+      <div class="panel" style="text-align:center">
+        <div style="font-size:28px;margin-bottom:8px">🗃️</div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:4px">Backup total</div>
+        <div class="sub" style="margin-bottom:10px">Todos los datos en JSON</div>
+        <button class="btn btn-g btn-sm" style="width:100%" onclick="exportarBackup()">⬇ Backup completo</button>
+      </div>
+      <div class="panel" style="text-align:center">
+        <div style="font-size:28px;margin-bottom:8px">📥</div>
+        <div style="font-size:12px;font-weight:700;margin-bottom:4px">Importar backup</div>
+        <div class="sub" style="margin-bottom:10px">Restaura desde un JSON previo</div>
+        <label class="btn btn-s btn-sm" style="width:100%;display:block;cursor:pointer;padding:5px 10px">📂 Seleccionar archivo<input type="file" accept=".json" style="display:none" onchange="importarBackup(this)"></label>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ====== MODALES ====== -->
+
+<!-- PROYECTO -->
+<div class="mo" id="mo-proy">
+  <div class="mbox wide">
+    <div class="mh"><h3>📁 Nuevo Proyecto AKADEM</h3><button class="mclose" onclick="closeModal('mo-proy')">✕</button></div>
+    <div class="mc">
+      <div class="frow"><div class="fg"><label class="fl">Nombre del proyecto *</label><input class="fi" id="p-nombre" placeholder="Nombre descriptivo del proyecto"></div><div class="fg"><label class="fl">Cliente *</label><select class="fs" id="p-cliente"><option value="">— Seleccionar cliente —</option></select></div></div>
+      <div class="frow"><div class="fg">
+        <label class="fl">Tipo de servicio AKADEM *</label>
+        <select class="fs" id="p-tipo" onchange="updateCodigo()">
+          <option value="">— Seleccionar —</option>
+          <option value="GEST">Gestión y Productividad</option>
+          <option value="LID">Liderazgo y Habilidades Blandas</option>
+          <option value="SEG">Seguridad, Riesgo y Cumplimiento</option>
+          <option value="NORM">Capacitación Normativa (SENCE)</option>
+          <option value="OPER">Formación Operacional e Inmersiva</option>
+          <option value="LMS">LMS y e-Learning (Moodle)</option>
+          <option value="DIG">Transformación Digital e IA</option>
+          <option value="TECH">Tecnología de Apoyo (Diseño instruccional)</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Estado</label>
+        <select class="fs" id="p-estado">
+          <option value="activo">Activo</option><option value="prospecto">Prospecto</option>
+          <option value="riesgo">En riesgo</option><option value="pausado">Pausado</option><option value="cerrado">Cerrado</option>
+        </select>
+      </div></div>
+      <div class="frow"><div class="fg"><label class="fl">Presupuesto total (CLP)</label><input class="fi" id="p-presupuesto" type="number" min="0" placeholder="0" onchange="updateCodigo()"></div><div class="fg"><label class="fl">Margen objetivo (%)</label><input class="fi" id="p-margen" type="number" min="0" max="100" placeholder="20"></div></div>
+      <div class="frow"><div class="fg"><label class="fl">Fecha inicio</label><input class="fi" id="p-inicio" type="date"></div><div class="fg"><label class="fl">Fecha cierre estimada</label><input class="fi" id="p-cierre" type="date"></div></div>
+      <div class="frow"><div class="fg"><label class="fl">Modalidad</label>
+        <select class="fs" id="p-modalidad">
+          <option>Presencial</option><option>E-learning</option><option>Blended / Híbrido</option>
+          <option>Microlearning</option><option>Inmersivo operacional</option><option>Aula virtual + LMS</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">Cuenta de ingreso *</label><select class="fs" id="p-cuenta"><option value="">— Seleccionar cuenta —</option></select></div></div>
+      <div class="sep"></div>
+      <div class="fg" style="margin-bottom:9px"><label class="fl">📌 Código interno (generado automáticamente)</label><input class="fi mono" id="p-codigo" readonly placeholder="Selecciona cliente y tipo primero..."></div>
+      <div class="fg" style="margin-bottom:0"><label class="fl">Descripción / Notas</label><input class="fi" id="p-desc" placeholder="Descripción breve del proyecto"></div>
+      <div class="btn-row"><button class="btn btn-s" onclick="closeModal('mo-proy')">Cancelar</button><button class="btn btn-p" onclick="guardarProyecto()">Crear Proyecto</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- TRANSACCIÓN -->
+<div class="mo" id="mo-tx">
+  <div class="mbox">
+    <div class="mh"><h3>💰 Registrar Transacción</h3><button class="mclose" onclick="closeModal('mo-tx')">✕</button></div>
+    <div class="mc">
+      <div class="frow"><div class="fg"><label class="fl">Tipo *</label><select class="fs" id="t-tipo"><option value="ingreso">Ingreso</option><option value="egreso">Egreso</option></select></div><div class="fg"><label class="fl">Monto (CLP) *</label><input class="fi" id="t-monto" type="number" min="0" placeholder="0"></div></div>
+      <div class="frow"><div class="fg"><label class="fl">Fecha *</label><input class="fi" id="t-fecha" type="date"></div><div class="fg"><label class="fl">Estado</label><select class="fs" id="t-estado"><option value="real">Real / Ejecutado</option><option value="proyectado">Proyectado</option><option value="comprometido">Comprometido</option><option value="vencido">Vencido</option></select></div></div>
+      <div class="frow"><div class="fg"><label class="fl">Proyecto</label><select class="fs" id="t-proyecto"><option value="">— Sin proyecto —</option></select></div><div class="fg"><label class="fl">Categoría</label><select class="fs" id="t-categoria"><option value="">— Sin categoría —</option></select></div></div>
+      <div class="frow"><div class="fg"><label class="fl">Cuenta *</label><select class="fs" id="t-cuenta"><option value="">— Seleccionar —</option></select></div><div class="fg"><label class="fl">Contraparte</label><select class="fs" id="t-contraparte"><option value="">— Sin contraparte —</option></select></div></div>
+      <div class="frow full"><div class="fg"><label class="fl">Concepto / Descripción</label><input class="fi" id="t-concepto" placeholder="Ej: Pago hito 2 capacitación"></div></div>
+      <div class="btn-row"><button class="btn btn-s" onclick="closeModal('mo-tx')">Cancelar</button><button class="btn btn-p" onclick="guardarTx()">Registrar</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- OC -->
+<div class="mo" id="mo-oc">
+  <div class="mbox wide">
+    <div class="mh"><h3>📄 Subir Orden de Compra</h3><button class="mclose" onclick="closeModal('mo-oc')">✕</button></div>
+    <div class="mc">
+      <div id="oc-upload-zone">
+        <div class="upload-zone" onclick="document.getElementById('oc-file').click()" id="oc-dropzone">
+          <input type="file" id="oc-file" accept=".pdf,.png,.jpg,.jpeg,.txt,.csv" onchange="procesarOC(this)">
+          <div style="font-size:36px;margin-bottom:10px">📎</div>
+          <div style="font-size:13px;font-weight:700;margin-bottom:4px">Arrastra o haz clic para subir la OC</div>
+          <div class="sub">PDF, imagen o texto — Los datos se extraerán automáticamente</div>
+        </div>
+      </div>
+      <div id="oc-processing" style="display:none">
+        <div class="processing"><span class="spin">⚙️</span> Extrayendo datos de la OC con IA... esto puede tomar unos segundos</div>
+      </div>
+      <div id="oc-form" style="display:none">
+        <div style="background:var(--green-bg);border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:var(--green);font-weight:600">✅ Datos extraídos automáticamente — revisa y corrige si es necesario</div>
+        <div class="frow"><div class="fg"><label class="fl">N° Orden de Compra</label><input class="fi mono" id="oc-num" placeholder="OC-XXXXX"></div><div class="fg"><label class="fl">Fecha OC</label><input class="fi" id="oc-fecha" type="date"></div></div>
+        <div class="frow"><div class="fg"><label class="fl">Empresa emisora (cliente)</label><select class="fs" id="oc-cliente"><option value="">— Seleccionar —</option></select></div><div class="fg"><label class="fl">Monto total (CLP)</label><input class="fi" id="oc-monto" type="number" min="0" placeholder="0"></div></div>
+        <div class="frow"><div class="fg"><label class="fl">Proyecto asociado</label><select class="fs" id="oc-proyecto"><option value="">— Sin proyecto —</option></select></div><div class="fg"><label class="fl">Cuenta de ingreso</label><select class="fs" id="oc-cuenta"><option value="">— Seleccionar cuenta —</option></select></div></div>
+        <div class="frow full"><div class="fg"><label class="fl">Descripción / Objeto de la OC</label><input class="fi" id="oc-desc" placeholder="Descripción del servicio contratado"></div></div>
+        <div class="frow"><div class="fg"><label class="fl">Estado</label><select class="fs" id="oc-estado"><option value="recibida">Recibida</option><option value="aprobada">Aprobada</option><option value="facturada">Facturada</option><option value="pagada">Pagada</option><option value="rechazada">Rechazada</option></select></div><div class="fg"><label class="fl">Condición de pago</label><input class="fi" id="oc-condpago" placeholder="Ej: 30 días desde recepción"></div></div>
+        <div class="fg" style="margin-bottom:0"><label class="fl">Archivo original</label><input class="fi mono" id="oc-archivo" readonly style="color:var(--gray)"></div>
+        <div class="btn-row"><button class="btn btn-s" onclick="resetOC()">Nueva OC</button><button class="btn btn-p" onclick="guardarOC()">Guardar OC</button></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CLIENTE -->
+<div class="mo" id="mo-cli">
+  <div class="mbox">
+    <div class="mh"><h3>🏢 Nuevo Cliente</h3><button class="mclose" onclick="closeModal('mo-cli')">✕</button></div>
+    <div class="mc">
+      <div class="frow"><div class="fg"><label class="fl">Nombre *</label><input class="fi" id="c-nombre" placeholder="Ej: SQM S.A."></div><div class="fg"><label class="fl">RUT</label><input class="fi" id="c-rut" placeholder="00.000.000-0"></div></div>
+      <div class="frow"><div class="fg"><label class="fl">Tipo</label><select class="fs" id="c-tipo"><option>Público</option><option>Privado</option><option>Mixto</option><option>Interno</option></select></div><div class="fg"><label class="fl">Código cliente (3 letras)</label><input class="fi mono" id="c-codigo" placeholder="Ej: SQM" maxlength="5" style="text-transform:uppercase" oninput="this.value=this.value.toUpperCase()"></div></div>
+      <div class="frow"><div class="fg"><label class="fl">Contacto</label><input class="fi" id="c-contacto" placeholder="Nombre contacto"></div><div class="fg"><label class="fl">Email</label><input class="fi" id="c-email" type="email" placeholder="contacto@cliente.cl"></div></div>
+      <div class="frow"><div class="fg"><label class="fl">Teléfono</label><input class="fi" id="c-tel" placeholder="+56 9..."></div><div class="fg"><label class="fl">Días promedio de pago</label><input class="fi" id="c-dias" type="number" value="30" min="0"></div></div>
+      <div class="btn-row"><button class="btn btn-s" onclick="closeModal('mo-cli')">Cancelar</button><button class="btn btn-p" onclick="guardarCliente()">Guardar</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- CUENTA -->
+<div class="mo" id="mo-cta">
+  <div class="mbox">
+    <div class="mh"><h3>🏦 Nueva Cuenta / Caja</h3><button class="mclose" onclick="closeModal('mo-cta')">✕</button></div>
+    <div class="mc">
+      <div class="frow"><div class="fg"><label class="fl">Nombre de la cuenta *</label><input class="fi" id="cta-nombre" placeholder="Ej: CTA CTE BancoEstado"></div><div class="fg"><label class="fl">Tipo</label><select class="fs" id="cta-tipo"><option>Cuenta Corriente</option><option>Cuenta Vista</option><option>Caja Chica</option><option>Inversión</option><option>Crédito</option><option>Recaudación</option></select></div></div>
+      <div class="frow"><div class="fg"><label class="fl">Banco / Institución</label><input class="fi" id="cta-banco" placeholder="Ej: BancoEstado"></div><div class="fg"><label class="fl">N° Cuenta</label><input class="fi" id="cta-num" placeholder="XXXX-XXXX"></div></div>
+      <div class="frow"><div class="fg"><label class="fl">Saldo inicial (CLP)</label><input class="fi" id="cta-saldo" type="number" value="0"></div><div class="fg"><label class="fl">Moneda</label><select class="fs" id="cta-moneda"><option>CLP</option><option>USD</option><option>UF</option></select></div></div>
+      <div class="frow full"><div class="fg"><label class="fl">Descripción / Uso principal</label><input class="fi" id="cta-desc" placeholder="Ej: Cuenta principal para ingresos por proyectos SENCE"></div></div>
+      <div class="btn-row"><button class="btn btn-s" onclick="closeModal('mo-cta')">Cancelar</button><button class="btn btn-p" onclick="guardarCuenta()">Guardar cuenta</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- PERSONA -->
+<div class="mo" id="mo-per">
+  <div class="mbox">
+    <div class="mh"><h3>👤 Nueva Persona / Recurso</h3><button class="mclose" onclick="closeModal('mo-per')">✕</button></div>
+    <div class="mc">
+      <div class="frow"><div class="fg"><label class="fl">Nombre completo *</label><input class="fi" id="per-nombre" placeholder="Nombre completo"></div><div class="fg"><label class="fl">Rol</label><input class="fi" id="per-rol" placeholder="Ej: Facilitador / Relator"></div></div>
+      <div class="frow"><div class="fg"><label class="fl">Tipo</label><select class="fs" id="per-tipo"><option value="fijo">Staff Fijo</option><option value="freelance">Freelance</option><option value="socio">Socio</option><option value="advisor">Asesor</option></select></div><div class="fg"><label class="fl">Costo mensual (CLP)</label><input class="fi" id="per-costo" type="number" min="0" placeholder="0"></div></div>
+      <div class="frow"><div class="fg"><label class="fl">Email</label><input class="fi" id="per-email" type="email" placeholder="email@persona.cl"></div><div class="fg"><label class="fl">Disponibilidad (%)</label><input class="fi" id="per-disp" type="number" min="0" max="100" value="100"></div></div>
+      <div class="btn-row"><button class="btn btn-s" onclick="closeModal('mo-per')">Cancelar</button><button class="btn btn-p" onclick="guardarPersona()">Guardar</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- CATEGORÍA -->
+<div class="mo" id="mo-cat">
+  <div class="mbox">
+    <div class="mh"><h3>🏷 Nueva Categoría</h3><button class="mclose" onclick="closeModal('mo-cat')">✕</button></div>
+    <div class="mc">
+      <div class="frow"><div class="fg"><label class="fl">Nombre *</label><input class="fi" id="cat-nombre" placeholder="Ej: Honorarios relatores"></div><div class="fg"><label class="fl">Tipo *</label><select class="fs" id="cat-tipo"><option value="ingreso">Ingreso</option><option value="egreso">Egreso</option></select></div></div>
+      <div class="frow"><div class="fg"><label class="fl">Ícono</label><input class="fi" id="cat-icono" placeholder="📌"></div><div class="fg"><label class="fl">Color</label><input class="fi" id="cat-color" type="color" value="#E8490F"></div></div>
+      <div class="btn-row"><button class="btn btn-s" onclick="closeModal('mo-cat')">Cancelar</button><button class="btn btn-p" onclick="guardarCat()">Guardar</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- CFG EMPRESA -->
+<div class="mo" id="mo-cfg-empresa">
+  <div class="mbox">
+    <div class="mh"><h3>🏢 Datos AKADEM S.A.</h3><button class="mclose" onclick="closeModal('mo-cfg-empresa')">✕</button></div>
+    <div class="mc">
+      <div style="background:var(--blue-bg);border-radius:8px;padding:9px 11px;margin-bottom:12px;font-size:11px;color:var(--blue)">ℹ️ Esta es la empresa administradora fija del sistema.</div>
+      <div class="frow"><div class="fg"><label class="fl">Nombre empresa</label><input class="fi" id="emp-nombre" value="AKADEM S.A."></div><div class="fg"><label class="fl">RUT</label><input class="fi" id="emp-rut" placeholder="76.XXX.XXX-X"></div></div>
+      <div class="frow"><div class="fg"><label class="fl">Email</label><input class="fi" id="emp-email" value="administracion@akadem.cl"></div><div class="fg"><label class="fl">Teléfono</label><input class="fi" id="emp-tel" value="+56 9 7432 6542"></div></div>
+      <div class="frow"><div class="fg"><label class="fl">Ciudad</label><input class="fi" id="emp-ciudad" placeholder="Valparaíso"></div><div class="fg"><label class="fl">Región</label><input class="fi" id="emp-region" placeholder="Región de Valparaíso"></div></div>
+      <div class="frow full"><div class="fg"><label class="fl">Giro</label><input class="fi" id="emp-giro" value="EdTech B2B — Capacitación corporativa, OTEC acreditada SENCE"></div></div>
+      <div class="btn-row"><button class="btn btn-s" onclick="closeModal('mo-cfg-empresa')">Cancelar</button><button class="btn btn-p" onclick="guardarEmpresa()">Guardar</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- CFG FLUJO -->
+<div class="mo" id="mo-cfg-flujo">
+  <div class="mbox">
+    <div class="mh"><h3>⚙️ Parámetros de Flujo</h3><button class="mclose" onclick="closeModal('mo-cfg-flujo')">✕</button></div>
+    <div class="mc">
+      <div class="frow"><div class="fg"><label class="fl">Caja mínima requerida (CLP)</label><input class="fi" id="cfg-caja-min" type="number" value="0"></div><div class="fg"><label class="fl">Días de runway mínimo</label><input class="fi" id="cfg-runway-min" type="number" value="30"></div></div>
+      <div class="frow"><div class="fg"><label class="fl">Margen mínimo por proyecto (%)</label><input class="fi" id="cfg-margen-min" type="number" value="20"></div><div class="fg"><label class="fl">Alerta facturas vencidas (días)</label><input class="fi" id="cfg-dias-venc" type="number" value="15"></div></div>
+      <div class="frow"><div class="fg"><label class="fl">% máximo RRHH / ingresos</label><input class="fi" id="cfg-rrhh-max" type="number" value="40"></div><div class="fg"><label class="fl">Días pago a proveedores</label><input class="fi" id="cfg-dias-prov" type="number" value="30"></div></div>
+      <div class="btn-row"><button class="btn btn-s" onclick="closeModal('mo-cfg-flujo')">Cancelar</button><button class="btn btn-p" onclick="guardarCfgFlujo()">Guardar</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- CFG PROYECCIÓN -->
+<div class="mo" id="mo-cfg-proy">
+  <div class="mbox">
+    <div class="mh"><h3>📈 Configurar Proyección</h3><button class="mclose" onclick="closeModal('mo-cfg-proy')">✕</button></div>
+    <div class="mc">
+      <div class="frow"><div class="fg"><label class="fl">Horizonte (meses)</label><input class="fi" id="cfg-horizonte" type="number" value="6" min="1" max="24"></div><div class="fg"><label class="fl">Crec. optimista (%/mes)</label><input class="fi" id="cfg-crec-opt" type="number" value="10" step="0.5"></div></div>
+      <div class="frow"><div class="fg"><label class="fl">Crec. base (%/mes)</label><input class="fi" id="cfg-crec-base" type="number" value="3" step="0.5"></div><div class="fg"><label class="fl">Crec. crítico (%/mes)</label><input class="fi" id="cfg-crec-crit" type="number" value="-5" step="0.5"></div></div>
+      <div class="frow"><div class="fg"><label class="fl">% costos fijos sobre ingresos</label><input class="fi" id="cfg-cf-pct" type="number" value="35" step="0.5"></div><div class="fg"><label class="fl">% costos variables sobre ingresos</label><input class="fi" id="cfg-cv-pct" type="number" value="20" step="0.5"></div></div>
+      <div class="btn-row"><button class="btn btn-s" onclick="closeModal('mo-cfg-proy')">Cancelar</button><button class="btn btn-p" onclick="guardarCfgProy()">Guardar</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- CFG KPIs -->
+<div class="mo" id="mo-cfg-kpis">
+  <div class="mbox">
+    <div class="mh"><h3>🎯 Metas & KPIs</h3><button class="mclose" onclick="closeModal('mo-cfg-kpis')">✕</button></div>
+    <div class="mc">
+      <div class="frow"><div class="fg"><label class="fl">Meta ingresos mensuales (CLP)</label><input class="fi" id="meta-ingresos" type="number" value="0"></div><div class="fg"><label class="fl">Meta EBITDA (%)</label><input class="fi" id="meta-ebitda" type="number" value="20"></div></div>
+      <div class="frow"><div class="fg"><label class="fl">Meta margen bruto (%)</label><input class="fi" id="meta-margen" type="number" value="30"></div><div class="fg"><label class="fl">Meta proyectos activos</label><input class="fi" id="meta-proyectos" type="number" value="5"></div></div>
+      <div class="btn-row"><button class="btn btn-s" onclick="closeModal('mo-cfg-kpis')">Cancelar</button><button class="btn btn-p" onclick="guardarMetas()">Guardar</button></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== ESTADO GLOBAL =====================
+const AKADEM = {
+  nombre:'AKADEM S.A.',rut:'76.XXX.XXX-X',email:'administracion@akadem.cl',
+  tel:'+56 9 7432 6542',ciudad:'Valparaíso',region:'Región de Valparaíso',
+  giro:'EdTech B2B — Capacitación corporativa, OTEC acreditada SENCE',
+  codigo:'AKD'
+};
+const TIPOS_SERVICIO = {
+  'GEST':'Gestión y Productividad','LID':'Liderazgo y Habilidades Blandas',
+  'SEG':'Seguridad, Riesgo y Cumplimiento','NORM':'Capacitación Normativa (SENCE)',
+  'OPER':'Formación Operacional e Inmersiva','LMS':'LMS y e-Learning (Moodle)',
+  'DIG':'Transformación Digital e IA','TECH':'Tecnología de Apoyo'
+};
+
+const DB_KEY = 'akadem_cashflow_v2';
+let DB = cargarDB();
+let sessionUser = null;
+
+function cargarDB(){
+  try{
+    const raw = localStorage.getItem(DB_KEY);
+    if(raw) return JSON.parse(raw);
+  }catch(e){}
+  return {
+    usuarios:[{id:1,nombre:'Admin',apellido:'AKADEM',email:'admin@akadem.cl',pass:'akadem2025',rol:'admin',creado:new Date().toISOString()}],
+    empresa:{...AKADEM},
+    cfg:{cajaMin:0,runwayMin:30,margenMin:20,diasVenc:15,rrhhMax:40,diasProv:30,
+         horizonte:6,crecOpt:10,crecBase:3,crecCrit:-5,cfPct:35,cvPct:20,
+         metaIngresos:0,metaEbitda:20,metaMargen:30,metaProyectos:5},
+    proyectos:[],clientes:[],personas:[],cuentas:[],
+    categorias:[
+      {id:1,nombre:'Honorarios / Servicios',tipo:'ingreso',icono:'💼',color:'#27AE60'},
+      {id:2,nombre:'Cursos y capacitación',tipo:'ingreso',icono:'🎓',color:'#2980B9'},
+      {id:3,nombre:'LMS / Licencias',tipo:'ingreso',icono:'💻',color:'#8E44AD'},
+      {id:4,nombre:'Consultoría',tipo:'ingreso',icono:'📋',color:'#27AE60'},
+      {id:5,nombre:'Otros ingresos',tipo:'ingreso',icono:'➕',color:'#27AE60'},
+      {id:6,nombre:'Sueldos / Honorarios RRHH',tipo:'egreso',icono:'👥',color:'#E74C3C'},
+      {id:7,nombre:'Arriendo / Infraestructura',tipo:'egreso',icono:'🏢',color:'#E67E22'},
+      {id:8,nombre:'Tecnología / Cloud / LMS',tipo:'egreso',icono:'☁️',color:'#2980B9'},
+      {id:9,nombre:'Diseño instruccional',tipo:'egreso',icono:'🎨',color:'#8E44AD'},
+      {id:10,nombre:'Marketing y ventas',tipo:'egreso',icono:'📣',color:'#E8490F'},
+      {id:11,nombre:'Viajes y viáticos',tipo:'egreso',icono:'✈️',color:'#16A085'},
+      {id:12,nombre:'Gastos generales',tipo:'egreso',icono:'📋',color:'#95A5A6'}
+    ],
+    transacciones:[],oc:[],
+    idCnt:{p:1,c:1,per:1,cta:1,t:1,cat:13,oc:1}
+  };
+}
+function guardarDB(){
+  try{localStorage.setItem(DB_KEY,JSON.stringify(DB));}
+  catch(e){toast('⚠️ Error al guardar (localStorage lleno)','err');}
+}
+
+// ===================== AUTH =====================
+function doLogin(){
+  const email=v('l-email'),pass=v('l-pass');
+  const user=DB.usuarios.find(u=>u.email===email&&u.pass===pass);
+  if(!user){showLoginErr('Email o contraseña incorrectos');return;}
+  sessionUser=user;
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app-screen').style.display='flex';
+  document.getElementById('sb-username').textContent=user.nombre+' '+user.apellido;
+  document.getElementById('sb-userrole').textContent=user.rol;
+  updateBadges();
+  renderDashboard();
+}
+function doRegister(){
+  const nombre=v('r-nombre'),apellido=v('r-apellido'),email=v('r-email'),pass=v('r-pass'),rol=v('r-rol');
+  if(!nombre||!email||!pass){showLoginErr('Completa todos los campos');return;}
+  if(DB.usuarios.find(u=>u.email===email)){showLoginErr('Email ya registrado');return;}
+  DB.usuarios.push({id:DB.idCnt.p++,nombre,apellido,email,pass,rol,creado:new Date().toISOString()});
+  guardarDB();
+  showLoginErr('✅ Cuenta creada. Ya puedes iniciar sesión.','ok');
+}
+function doLogout(){sessionUser=null;location.reload();}
+function showLoginErr(msg,tipo='err'){
+  const el=document.getElementById('login-error');
+  el.style.display='block';el.style.color=tipo==='ok'?'var(--green)':'var(--red)';
+  el.textContent=msg;
+}
+function switchLoginTab(tab,btnEl,fromConfig=false){
+  ['login','register'].forEach(t=>{
+    document.getElementById('ltab-'+t).style.display=t===tab?'':'none';
+  });
+  document.querySelectorAll('.ltab').forEach(b=>b.classList.remove('on'));
+  if(btnEl) btnEl.classList.add('on');
+  else document.querySelectorAll('.ltab')[tab==='login'?0:1].classList.add('on');
+  if(fromConfig){
+    document.getElementById('login-screen').style.display='flex';
+    document.getElementById('app-screen').style.display='none';
+  }
+}
+
+// ===================== NAV =====================
+document.querySelectorAll('.nb[data-page]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.nb').forEach(b=>b.classList.remove('on'));
+    btn.classList.add('on');
+    const pg=btn.dataset.page;
+    document.querySelectorAll('.page').forEach(p=>p.classList.add('hidden'));
+    document.getElementById('page-'+pg).classList.remove('hidden');
+    document.getElementById('page-title').textContent=btn.textContent.replace(/\d+$/,'').trim();
+    renderPage(pg);
+  });
+});
+function renderPage(pg){
+  const map={dashboard:renderDashboard,proyectos:()=>renderProyectos(),flujo:renderFlujo,
+    oc:renderOC,'m-clientes':renderClientes,'m-cuentas':renderCuentas,
+    'm-personas':renderPersonas,'m-categorias':renderCategorias,
+    config:renderConfig,alertas:renderAlertas,proyeccion:renderProyeccion,exportar:()=>{}};
+  if(map[pg]) map[pg]();
+}
+
+// ===================== MODALES =====================
+function openModal(id){
+  if(id==='mo-tx') poblarTx();
+  if(id==='mo-proy'){poblarSelectClientes('p-cliente');poblarSelectCuentas('p-cuenta');document.getElementById('p-inicio').value=new Date().toISOString().split('T')[0];}
+  if(id==='mo-oc'){resetOC();poblarSelectClientes('oc-cliente');poblarSelectProyectos('oc-proyecto');poblarSelectCuentas('oc-cuenta');}
+  document.getElementById(id).classList.add('open');
+}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.mo').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+// ===================== PROYECTO =====================
+function updateCodigo(){
+  const cliId=v('p-cliente');
+  const tipo=v('p-tipo');
+  const cli=DB.clientes.find(c=>c.id==cliId);
+  const cliCod=cli?.codigo||'CLI';
+  const now=new Date();
+  const mm=String(now.getMonth()+1).padStart(2,'0');
+  const yy=String(now.getFullYear()).slice(-2);
+  const seq=String(DB.idCnt.p).padStart(3,'0');
+  if(tipo&&cliId){
+    document.getElementById('p-codigo').value=`AKD-${cliCod}-${tipo}-${seq}-${mm}${yy}`;
+  }
+}
+function guardarProyecto(){
+  const nom=v('p-nombre'); if(!nom){toast('Nombre requerido','err');return;}
+  const tipo=v('p-tipo'); if(!tipo){toast('Tipo de servicio requerido','err');return;}
+  const cli=DB.clientes.find(c=>c.id==v('p-cliente'));
+  const cliCod=cli?.codigo||'CLI';
+  const now=new Date();
+  const mm=String(now.getMonth()+1).padStart(2,'0');
+  const yy=String(now.getFullYear()).slice(-2);
+  const seq=String(DB.idCnt.p).padStart(3,'0');
+  const codigo=v('p-codigo')||`AKD-${cliCod}-${tipo}-${seq}-${mm}${yy}`;
+  DB.proyectos.push({
+    id:DB.idCnt.p++,codigo,nombre:nom,clienteId:v('p-cliente'),
+    clienteNom:cli?.nombre||'—',tipo,tipoNom:TIPOS_SERVICIO[tipo]||tipo,
+    estado:v('p-estado'),presupuesto:num('p-presupuesto'),margenObj:num('p-margen'),
+    inicio:v('p-inicio'),cierre:v('p-cierre'),desc:v('p-desc'),
+    modalidad:v('p-modalidad'),cuentaId:v('p-cuenta'),
+    gastado:0,ingresos:0,creado:new Date().toISOString()
+  });
+  guardarDB();
+  ['p-nombre','p-desc','p-codigo'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('p-presupuesto').value='';
+  closeModal('mo-proy');
+  updateBadges();
+  toast('✅ Proyecto creado');
+  renderProyectos();
+}
+
+// ===================== TRANSACCIÓN =====================
+function poblarTx(){
+  poblar('t-proyecto',DB.proyectos,'id','nombre','— Sin proyecto —');
+  poblar('t-categoria',DB.categorias,'id','nombre','— Sin categoría —');
+  poblar('t-cuenta',DB.cuentas,'id','nombre','— Seleccionar cuenta —');
+  poblar('t-contraparte',DB.clientes,'id','nombre','— Sin contraparte —');
+  if(!document.getElementById('t-fecha').value) document.getElementById('t-fecha').value=new Date().toISOString().split('T')[0];
+}
+function guardarTx(){
+  const monto=num('t-monto'); if(!monto){toast('Monto requerido','err');return;}
+  const fecha=v('t-fecha'); if(!fecha){toast('Fecha requerida','err');return;}
+  const t={id:DB.idCnt.t++,tipo:v('t-tipo'),monto,fecha,estado:v('t-estado'),
+    proyectoId:v('t-proyecto'),categoriaId:v('t-categoria'),
+    cuentaId:v('t-cuenta'),contraparteId:v('t-contraparte'),
+    concepto:v('t-concepto')||'Sin descripción',creado:new Date().toISOString()};
+  t.proyectoNom=DB.proyectos.find(p=>p.id==t.proyectoId)?.nombre||'—';
+  t.proyectoCod=DB.proyectos.find(p=>p.id==t.proyectoId)?.codigo||'';
+  t.categoriaNom=DB.categorias.find(c=>c.id==t.categoriaId)?.nombre||'—';
+  t.cuentaNom=DB.cuentas.find(c=>c.id==t.cuentaId)?.nombre||'—';
+  t.contraparteNom=DB.clientes.find(c=>c.id==t.contraparteId)?.nombre||'—';
+  DB.transacciones.push(t);
+  const p=DB.proyectos.find(x=>x.id==t.proyectoId);
+  if(p){if(t.tipo==='ingreso')p.ingresos+=monto;else p.gastado+=monto;}
+  const cta=DB.cuentas.find(c=>c.id==t.cuentaId);
+  if(cta){if(t.tipo==='ingreso')cta.saldo+=monto;else cta.saldo-=monto;}
+  guardarDB();
+  ['t-monto','t-concepto'].forEach(id=>document.getElementById(id).value='');
+  closeModal('mo-tx');
+  generarAlertas();
+  toast('✅ Transacción registrada');
+  renderPage(document.querySelector('.nb.on')?.dataset.page||'dashboard');
+}
+
+// ===================== ORDEN DE COMPRA =====================
+let ocArchivoNom='';
+async function procesarOC(input){
+  const file=input.files[0]; if(!file) return;
+  ocArchivoNom=file.name;
+  document.getElementById('oc-processing').style.display='block';
+  document.getElementById('oc-upload-zone').style.display='none';
+  // Leer contenido si es texto
+  let contenido='';
+  if(file.type.includes('text')||file.name.endsWith('.csv')){
+    contenido=await file.text();
+  }
+  // Llamar a Claude API para extraer datos
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        messages:[{role:'user',content:`Analiza este documento que es una Orden de Compra y extrae los siguientes datos en JSON puro (sin markdown, sin explicación):
+{
+  "numero_oc": "número o código de la OC",
+  "fecha": "YYYY-MM-DD",
+  "empresa_emisora": "nombre de quien emite la OC",
+  "monto": número sin puntos ni comas,
+  "descripcion": "descripción del servicio o producto",
+  "condicion_pago": "condiciones de pago",
+  "estado": "recibida"
+}
+Si no encuentras algún campo, usa null. Nombre del archivo: ${file.name}
+Contenido/contexto: ${contenido.slice(0,2000)||'(archivo PDF o imagen — extrae lo que puedas del nombre del archivo)'}`}]
+      })
+    });
+    const data=await res.json();
+    const texto=data.content?.find(b=>b.type==='text')?.text||'{}';
+    let datos={};
+    try{datos=JSON.parse(texto.replace(/```json|```/g,'').trim());}catch(e){}
+    document.getElementById('oc-processing').style.display='none';
+    document.getElementById('oc-form').style.display='block';
+    if(datos.numero_oc) document.getElementById('oc-num').value=datos.numero_oc;
+    if(datos.fecha) document.getElementById('oc-fecha').value=datos.fecha;
+    if(datos.monto) document.getElementById('oc-monto').value=datos.monto;
+    if(datos.descripcion) document.getElementById('oc-desc').value=datos.descripcion;
+    if(datos.condicion_pago) document.getElementById('oc-condpago').value=datos.condicion_pago;
+    document.getElementById('oc-archivo').value=file.name;
+    // intentar preseleccionar cliente
+    if(datos.empresa_emisora){
+      const cliMatch=DB.clientes.find(c=>c.nombre.toLowerCase().includes(datos.empresa_emisora.toLowerCase().split(' ')[0]));
+      if(cliMatch) document.getElementById('oc-cliente').value=cliMatch.id;
+    }
+  }catch(e){
+    document.getElementById('oc-processing').style.display='none';
+    document.getElementById('oc-form').style.display='block';
+    document.getElementById('oc-archivo').value=file.name;
+    toast('⚠️ Extracción manual: completa los datos','warn');
+  }
+}
+function resetOC(){
+  document.getElementById('oc-upload-zone').style.display='block';
+  document.getElementById('oc-processing').style.display='none';
+  document.getElementById('oc-form').style.display='none';
+  document.getElementById('oc-file').value='';
+  ['oc-num','oc-desc','oc-condpago'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('oc-monto').value='';
+}
+function guardarOC(){
+  const num=v('oc-num'); if(!num){toast('N° OC requerido','err');return;}
+  const cli=DB.clientes.find(c=>c.id==v('oc-cliente'));
+  const proy=DB.proyectos.find(p=>p.id==v('oc-proyecto'));
+  const cta=DB.cuentas.find(c=>c.id==v('oc-cuenta'));
+  DB.oc.push({
+    id:DB.idCnt.oc++,numero:num,fecha:v('oc-fecha'),
+    clienteId:v('oc-cliente'),clienteNom:cli?.nombre||'—',
+    monto:num('oc-monto'),descripcion:v('oc-desc'),
+    proyectoId:v('oc-proyecto'),proyectoNom:proy?.nombre||'—',proyectoCod:proy?.codigo||'',
+    cuentaId:v('oc-cuenta'),cuentaNom:cta?.nombre||'—',
+    estado:v('oc-estado'),condpago:v('oc-condpago'),
+    archivo:document.getElementById('oc-archivo').value,
+    creado:new Date().toISOString()
+  });
+  guardarDB();
+  closeModal('mo-oc');
+  updateBadges();
+  toast('✅ OC guardada');
+  renderOC();
+}
+
+// ===================== CLIENTE =====================
+function guardarCliente(){
+  const nom=v('c-nombre'); if(!nom){toast('Nombre requerido','err');return;}
+  const cod=v('c-codigo')||nom.slice(0,3).toUpperCase();
+  DB.clientes.push({id:DB.idCnt.c++,nombre:nom,rut:v('c-rut'),tipo:v('c-tipo'),codigo:cod,contacto:v('c-contacto'),email:v('c-email'),tel:v('c-tel'),diasPago:num('c-dias')||30,creado:new Date().toISOString()});
+  guardarDB();
+  ['c-nombre','c-rut','c-contacto','c-email','c-tel','c-codigo'].forEach(id=>document.getElementById(id).value='');
+  closeModal('mo-cli');
+  updateBadges();
+  toast('✅ Cliente guardado');
+  renderClientes();
+}
+
+// ===================== CUENTA =====================
+function guardarCuenta(){
+  const nom=v('cta-nombre'); if(!nom){toast('Nombre requerido','err');return;}
+  DB.cuentas.push({id:DB.idCnt.cta++,nombre:nom,tipo:v('cta-tipo'),banco:v('cta-banco'),saldo:num('cta-saldo'),moneda:v('cta-moneda'),num:v('cta-num'),desc:v('cta-desc'),creado:new Date().toISOString()});
+  guardarDB();
+  ['cta-nombre','cta-banco','cta-num','cta-desc'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('cta-saldo').value='0';
+  closeModal('mo-cta');
+  updateBadges();
+  toast('✅ Cuenta guardada');
+  renderCuentas();
+}
+
+// ===================== PERSONA =====================
+function guardarPersona(){
+  const nom=v('per-nombre'); if(!nom){toast('Nombre requerido','err');return;}
+  DB.personas.push({id:DB.idCnt.per++,nombre:nom,rol:v('per-rol'),tipo:v('per-tipo'),costo:num('per-costo'),email:v('per-email'),disp:num('per-disp')||100,creado:new Date().toISOString()});
+  guardarDB();
+  ['per-nombre','per-rol','per-email'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('per-costo').value='';
+  closeModal('mo-per');
+  updateBadges();
+  toast('✅ Persona guardada');
+  renderPersonas();
+}
+
+// ===================== CATEGORÍA =====================
+function guardarCat(){
+  const nom=v('cat-nombre'); if(!nom){toast('Nombre requerido','err');return;}
+  DB.categorias.push({id:DB.idCnt.cat++,nombre:nom,tipo:v('cat-tipo'),icono:v('cat-icono')||'📌',color:v('cat-color')});
+  guardarDB();
+  closeModal('mo-cat');
+  toast('✅ Categoría guardada');
+  renderCategorias();
+}
+
+// ===================== CFG =====================
+function guardarEmpresa(){
+  DB.empresa={nombre:v('emp-nombre'),rut:v('emp-rut'),email:v('emp-email'),tel:v('emp-tel'),ciudad:v('emp-ciudad'),region:v('emp-region'),giro:v('emp-giro'),codigo:'AKD'};
+  guardarDB();closeModal('mo-cfg-empresa');toast('✅ Datos AKADEM guardados');renderConfig();
+}
+function guardarCfgFlujo(){
+  Object.assign(DB.cfg,{cajaMin:num('cfg-caja-min'),runwayMin:num('cfg-runway-min'),margenMin:num('cfg-margen-min'),diasVenc:num('cfg-dias-venc'),rrhhMax:num('cfg-rrhh-max'),diasProv:num('cfg-dias-prov')});
+  guardarDB();closeModal('mo-cfg-flujo');generarAlertas();toast('✅ Parámetros guardados');renderConfig();
+}
+function guardarCfgProy(){
+  Object.assign(DB.cfg,{horizonte:num('cfg-horizonte'),crecOpt:num('cfg-crec-opt'),crecBase:num('cfg-crec-base'),crecCrit:num('cfg-crec-crit'),cfPct:num('cfg-cf-pct'),cvPct:num('cfg-cv-pct')});
+  guardarDB();closeModal('mo-cfg-proy');toast('✅ Proyección configurada');
+}
+function guardarMetas(){
+  Object.assign(DB.cfg,{metaIngresos:num('meta-ingresos'),metaEbitda:num('meta-ebitda'),metaMargen:num('meta-margen'),metaProyectos:num('meta-proyectos')});
+  guardarDB();closeModal('mo-cfg-kpis');toast('✅ Metas guardadas');
+}
+
+// ===================== RENDERS =====================
+function renderDashboard(){
+  const ing=sumar('ingreso','real'),egr=sumar('egreso','real');
+  const caja=totalCaja(),costoRRHH=DB.personas.reduce((s,p)=>s+(p.costo||0),0);
+  const burn=costoRRHH>0?Math.round(costoRRHH/30):0;
+  const runway=burn>0&&caja>0?Math.round(caja/burn):'—';
+  const el=document.getElementById('dash-content');
+  if(!DB.transacciones.length&&!DB.proyectos.length){
+    el.innerHTML=`<div class="wizard">
+      <div style="font-size:38px;margin-bottom:10px">🦉</div>
+      <h2 style="font-size:16px;font-weight:800;margin-bottom:5px">¡Bienvenido a AKADEM CashFlow Manager!</h2>
+      <p style="font-size:12px;color:var(--gray);margin-bottom:16px">Comienza agregando clientes, cuentas y proyectos para activar el dashboard.</p>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-s btn-sm" onclick="openModal('mo-cta')">🏦 Nueva cuenta</button>
+        <button class="btn btn-s btn-sm" onclick="openModal('mo-cli')">🏢 Nuevo cliente</button>
+        <button class="btn btn-p btn-sm" onclick="openModal('mo-proy')">📁 Nuevo proyecto</button>
+        <button class="btn btn-s btn-sm" onclick="openModal('mo-tx')">💰 Transacción</button>
+      </div>
+    </div>`;return;
+  }
+  el.innerHTML=`
+  <div class="kpi-grid">
+    <div class="kpi brand"><div class="kpi-lbl">Caja disponible</div><div class="kpi-val">${fmt(caja)}</div><div class="kpi-sub">${DB.cuentas.length} cuenta(s)</div></div>
+    <div class="kpi ok"><div class="kpi-lbl">Ingresos reales</div><div class="kpi-val">${fmt(ing)}</div><div class="kpi-sub">${DB.transacciones.filter(t=>t.tipo==='ingreso'&&t.estado==='real').length} movimientos</div></div>
+    <div class="kpi bad"><div class="kpi-lbl">Egresos reales</div><div class="kpi-val">${fmt(egr)}</div><div class="kpi-sub">${DB.transacciones.filter(t=>t.tipo==='egreso'&&t.estado==='real').length} movimientos</div></div>
+    <div class="kpi info"><div class="kpi-lbl">Burn rate / día</div><div class="kpi-val">${burn>0?fmt(burn):'—'}</div><div class="kpi-sub">Runway: ${runway} días</div></div>
+  </div>
+  <div class="g75">
+    <div class="panel"><div class="ph"><div class="pt">Flujo mensual</div></div><div class="cw" style="height:170px"><canvas id="ch-flujo"></canvas></div></div>
+    <div class="panel"><div class="ph"><div class="pt">Proyectos — presupuesto vs gasto</div></div><div class="cw" style="height:170px"><canvas id="ch-proy"></canvas></div></div>
+  </div>
+  <div class="g2">
+    <div class="panel"><div class="ph"><div class="pt">Proyectos recientes</div><span class="pa" onclick="navTo('proyectos')">Ver todos →</span></div>${!DB.proyectos.length?emptyM('Sin proyectos'):proySummary()}</div>
+    <div class="panel"><div class="ph"><div class="pt">Últimos movimientos</div><span class="pa" onclick="navTo('flujo')">Ver todos →</span></div>${!DB.transacciones.length?emptyM('Sin movimientos'):txSummary()}</div>
+  </div>`;
+  setTimeout(()=>{drawFlujo();drawProy();},50);
+}
+
+function proySummary(){
+  return `<table class="tbl"><thead><tr><th>Código</th><th>Nombre</th><th>Tipo</th><th>Estado</th></tr></thead><tbody>
+  ${DB.proyectos.slice(-5).reverse().map(p=>`<tr>
+    <td><span class="code-badge">${p.codigo}</span></td>
+    <td><strong>${p.nombre}</strong><div class="sub">${p.clienteNom}</div></td>
+    <td><span class="badge" style="background:${tipoColor(p.tipo)+'22'};color:${tipoColor(p.tipo)}">${p.tipo}</span></td>
+    <td>${estadoBadge(p.estado)}</td>
+  </tr>`).join('')}</tbody></table>`;
+}
+function txSummary(){
+  return `<table class="tbl"><thead><tr><th>Concepto</th><th>Tipo</th><th>Monto</th></tr></thead><tbody>
+  ${DB.transacciones.slice(-5).reverse().map(t=>`<tr>
+    <td>${t.concepto}<div class="sub">${t.fecha}</div></td>
+    <td>${t.tipo==='ingreso'?'<span class="badge bg-green">Ingreso</span>':'<span class="badge bg-red">Egreso</span>'}</td>
+    <td style="font-weight:700;color:${t.tipo==='ingreso'?'var(--green)':'var(--red)'}">${t.tipo==='ingreso'?'+':'-'}${fmt(t.monto)}</td>
+  </tr>`).join('')}</tbody></table>`;
+}
+
+function drawFlujo(){
+  const ctx=document.getElementById('ch-flujo');if(!ctx)return;
+  const meses=getLast6();
+  new Chart(ctx,{type:'bar',data:{labels:meses.map(m=>m.slice(0,7)),datasets:[
+    {label:'Ing',data:meses.map(m=>sumarMes('ingreso',m)),backgroundColor:'#27AE6088',borderRadius:3},
+    {label:'Egr',data:meses.map(m=>sumarMes('egreso',m)),backgroundColor:'#E74C3C88',borderRadius:3}
+  ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>fmtK(v)}}}}});
+}
+function drawProy(){
+  const ctx=document.getElementById('ch-proy');if(!ctx)return;
+  if(!DB.proyectos.length)return;
+  new Chart(ctx,{type:'bar',data:{labels:DB.proyectos.map(p=>p.codigo||p.nombre.slice(0,8)),datasets:[
+    {label:'Presupuesto',data:DB.proyectos.map(p=>p.presupuesto||0),backgroundColor:'#2D314444',borderRadius:3},
+    {label:'Gastado',data:DB.proyectos.map(p=>p.gastado||0),backgroundColor:'#E8490FCC',borderRadius:3}
+  ]},options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{ticks:{callback:v=>fmtK(v)}},y:{grid:{display:false}}}}});
+}
+
+function renderProyectos(filtro='todos'){
+  let data=DB.proyectos;
+  if(filtro!=='todos') data=data.filter(p=>p.estado===filtro);
+  document.getElementById('proy-sub').textContent=`${DB.proyectos.length} total — ${DB.proyectos.filter(p=>p.estado==='activo').length} activos`;
+  const el=document.getElementById('proy-list');
+  if(!data.length){el.innerHTML=`<div class="panel">${emptyM('Sin proyectos para este filtro')}</div>`;return;}
+  el.innerHTML=`<div class="panel"><table class="tbl">
+    <thead><tr><th>Código interno</th><th>Proyecto</th><th>Cliente</th><th>Tipo AKADEM</th><th>Cuenta ingreso</th><th>Presupuesto</th><th>Margen obj.</th><th>Estado</th><th></th></tr></thead>
+    <tbody>${data.map(p=>`<tr>
+      <td><span class="code-badge">${p.codigo}</span></td>
+      <td><strong>${p.nombre}</strong>${p.desc?`<div class="sub">${p.desc}</div>`:''}</td>
+      <td>${p.clienteNom}</td>
+      <td><span class="badge" style="background:${tipoColor(p.tipo)+'22'};color:${tipoColor(p.tipo)}">${p.tipoNom||p.tipo}</span></td>
+      <td><span class="sub">${DB.cuentas.find(c=>c.id==p.cuentaId)?.nombre||'—'}</span></td>
+      <td style="font-weight:700">${fmt(p.presupuesto||0)}</td>
+      <td>${p.margenObj||0}%</td>
+      <td>${estadoBadge(p.estado)}</td>
+      <td><button class="btn btn-d btn-sm" onclick="eliminar('proyectos',${p.id})">✕</button></td>
+    </tr>`).join('')}
+    </tbody></table></div>`;
+}
+function filterProy(f,tab){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));tab.classList.add('on');renderProyectos(f);}
+
+function renderFlujo(){
+  const filtro=document.getElementById('flujo-filtro')?.value||'';
+  let data=DB.transacciones;
+  if(filtro) data=data.filter(t=>t.tipo===filtro);
+  const ing=sumar('ingreso','real'),egr=sumar('egreso','real');
+  document.getElementById('flujo-kpis').innerHTML=`
+  <div class="kpi-grid">
+    <div class="kpi brand"><div class="kpi-lbl">Saldo cuentas</div><div class="kpi-val">${fmt(totalCaja())}</div></div>
+    <div class="kpi ok"><div class="kpi-lbl">Ingresos reales</div><div class="kpi-val">${fmt(ing)}</div></div>
+    <div class="kpi bad"><div class="kpi-lbl">Egresos reales</div><div class="kpi-val">${fmt(egr)}</div></div>
+    <div class="kpi info"><div class="kpi-lbl">Resultado neto</div><div class="kpi-val" style="color:${ing-egr>=0?'var(--green)':'var(--red)'}">${fmt(ing-egr)}</div></div>
+  </div>`;
+  const tb=document.getElementById('flujo-tabla');
+  if(!data.length){tb.innerHTML=emptyM('Sin movimientos registrados');return;}
+  tb.innerHTML=`<table class="tbl">
+    <thead><tr><th>Fecha</th><th>Concepto</th><th>Proyecto</th><th>Categoría</th><th>Cuenta</th><th>Tipo</th><th>Estado</th><th>Monto</th><th></th></tr></thead>
+    <tbody>${[...data].reverse().map(t=>`<tr>
+      <td>${t.fecha}</td>
+      <td><strong>${t.concepto}</strong></td>
+      <td>${t.proyectoCod?`<span class="code-badge" style="font-size:9px">${t.proyectoCod}</span>`:''}<div class="sub">${t.proyectoNom}</div></td>
+      <td><span class="sub">${t.categoriaNom}</span></td>
+      <td><span class="sub">${t.cuentaNom}</span></td>
+      <td>${t.tipo==='ingreso'?'<span class="badge bg-green">Ingreso</span>':'<span class="badge bg-red">Egreso</span>'}</td>
+      <td>${estadoTxBadge(t.estado)}</td>
+      <td style="font-weight:700;color:${t.tipo==='ingreso'?'var(--green)':'var(--red)'}">${t.tipo==='ingreso'?'+':'-'}${fmt(t.monto)}</td>
+      <td><button class="btn btn-d btn-sm" onclick="eliminarTx(${t.id})">✕</button></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+function renderOC(){
+  const el=document.getElementById('oc-list');
+  if(!DB.oc.length){el.innerHTML=`<div class="panel">${emptyM('Sin OC registradas — Sube tu primera orden de compra')}</div>`;return;}
+  el.innerHTML=[...DB.oc].reverse().map(oc=>`
+  <div class="oc-card">
+    <div class="oc-header">
+      <div>
+        <div class="oc-num">${oc.numero}</div>
+        <div class="sub">${oc.fecha||'—'} · ${oc.clienteNom}</div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        ${estadoOCBadge(oc.estado)}
+        <button class="btn btn-d btn-sm" onclick="eliminar('oc',${oc.id})">✕</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;font-size:11px;margin-bottom:8px">
+      <div><div style="color:var(--gray);font-size:9px;font-weight:700;text-transform:uppercase">Monto</div><div style="font-weight:800;font-size:14px;color:var(--green)">${fmt(oc.monto)}</div></div>
+      <div><div style="color:var(--gray);font-size:9px;font-weight:700;text-transform:uppercase">Proyecto</div><div>${oc.proyectoCod?`<span class="code-badge" style="font-size:9px">${oc.proyectoCod}</span>`:''} ${oc.proyectoNom}</div></div>
+      <div><div style="color:var(--gray);font-size:9px;font-weight:700;text-transform:uppercase">Cuenta ingreso</div><div>${oc.cuentaNom}</div></div>
+      <div><div style="color:var(--gray);font-size:9px;font-weight:700;text-transform:uppercase">Cond. pago</div><div>${oc.condpago||'—'}</div></div>
+    </div>
+    ${oc.descripcion?`<div style="font-size:11px;color:var(--gray);margin-bottom:6px">📋 ${oc.descripcion}</div>`:''}
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:10px;color:var(--gray)">📎 ${oc.archivo||'—'}</span>
+      <button class="btn btn-g btn-sm" onclick="ocToTx(${oc.id})">💰 Generar transacción</button>
+    </div>
+  </div>`).join('');
+}
+
+function ocToTx(id){
+  const oc=DB.oc.find(x=>x.id===id);if(!oc)return;
+  openModal('mo-tx');
+  setTimeout(()=>{
+    document.getElementById('t-tipo').value='ingreso';
+    document.getElementById('t-monto').value=oc.monto;
+    document.getElementById('t-fecha').value=oc.fecha||new Date().toISOString().split('T')[0];
+    document.getElementById('t-concepto').value=`OC ${oc.numero} — ${oc.clienteNom}`;
+    const pSel=document.getElementById('t-proyecto');
+    if(oc.proyectoId) pSel.value=oc.proyectoId;
+    const cSel=document.getElementById('t-cuenta');
+    if(oc.cuentaId) cSel.value=oc.cuentaId;
+  },100);
+}
+
+function renderProyeccion(){
+  const el=document.getElementById('proyeccion-content');
+  const base=totalCaja(),ingMes=sumar('ingreso','real'),egrMes=sumar('egreso','real');
+  const m=DB.cfg.horizonte||6;
+  const opt=[],bas=[],crit=[];
+  for(let i=1;i<=m;i++){
+    opt.push(Math.round(base+(ingMes*(1+DB.cfg.crecOpt/100)-egrMes)*i));
+    bas.push(Math.round(base+(ingMes*(1+DB.cfg.crecBase/100)-egrMes)*i));
+    crit.push(Math.round(base+(ingMes*(1+DB.cfg.crecCrit/100)-egrMes)*i));
+  }
+  const labs=[];for(let i=1;i<=m;i++){const d=new Date();d.setMonth(d.getMonth()+i);labs.push(d.toLocaleDateString('es-CL',{month:'short',year:'2-digit'}));}
+  el.innerHTML=`
+  <div class="g3" style="margin-bottom:14px">
+    <div class="panel" style="border-top:3px solid var(--green);text-align:center"><div style="font-size:11px;font-weight:700;color:var(--green);margin-bottom:4px">📈 Optimista +${DB.cfg.crecOpt}%/mes</div><div style="font-size:20px;font-weight:800;color:var(--green)">${fmt(opt[opt.length-1])}</div><div class="sub">a ${m} meses</div></div>
+    <div class="panel" style="border-top:3px solid var(--yellow);text-align:center"><div style="font-size:11px;font-weight:700;color:var(--yellow);margin-bottom:4px">📊 Base +${DB.cfg.crecBase}%/mes</div><div style="font-size:20px;font-weight:800;color:var(--yellow)">${fmt(bas[bas.length-1])}</div><div class="sub">a ${m} meses</div></div>
+    <div class="panel" style="border-top:3px solid var(--red);text-align:center"><div style="font-size:11px;font-weight:700;color:var(--red);margin-bottom:4px">📉 Crítico ${DB.cfg.crecCrit}%/mes</div><div style="font-size:20px;font-weight:800;color:var(--red)">${fmt(crit[crit.length-1])}</div><div class="sub">a ${m} meses</div></div>
+  </div>
+  <div class="panel"><div class="ph"><div class="pt">Forecast — ${m} meses</div><button class="btn btn-s btn-sm" onclick="openModal('mo-cfg-proy')">⚙️ Configurar</button></div><div class="cw" style="height:190px"><canvas id="ch-forecast"></canvas></div></div>`;
+  setTimeout(()=>{
+    const ctx=document.getElementById('ch-forecast');if(!ctx)return;
+    new Chart(ctx,{type:'line',data:{labels:labs,datasets:[
+      {label:'Optimista',data:opt,borderColor:'#27AE60',tension:.4,pointRadius:2,borderWidth:2,fill:false},
+      {label:'Base',data:bas,borderColor:'#E8490F',tension:.4,pointRadius:2,borderWidth:2,fill:false},
+      {label:'Crítico',data:crit,borderColor:'#E74C3C',tension:.4,pointRadius:2,borderWidth:2,borderDash:[5,3],fill:false}
+    ]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>fmtK(v)}}}}});
+  },50);
+}
+
+function renderClientes(){
+  const el=document.getElementById('cli-tabla');
+  if(!DB.clientes.length){el.innerHTML=emptyM('Sin clientes — Agrega tu primer cliente');return;}
+  el.innerHTML=`<table class="tbl">
+    <thead><tr><th>Código</th><th>Nombre</th><th>RUT</th><th>Tipo</th><th>Contacto</th><th>Días pago</th><th></th></tr></thead>
+    <tbody>${DB.clientes.map(c=>`<tr>
+      <td><span class="code-badge">${c.codigo}</span></td>
+      <td><strong>${c.nombre}</strong>${c.email?`<div class="sub">${c.email}</div>`:''}</td>
+      <td>${c.rut||'—'}</td>
+      <td><span class="badge bg-gray">${c.tipo}</span></td>
+      <td>${c.contacto||'—'}</td>
+      <td>${c.diasPago} días</td>
+      <td><button class="btn btn-d btn-sm" onclick="eliminar('clientes',${c.id})">✕</button></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+function renderCuentas(){
+  const el=document.getElementById('cuentas-grid');
+  if(!DB.cuentas.length){el.innerHTML=`<div class="panel">${emptyM('Sin cuentas — Agrega tu primera cuenta bancaria o caja')}</div>`;return;}
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:11px">${DB.cuentas.map(c=>`
+    <div class="panel" style="border-top:3px solid var(--brand)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div><div style="font-size:13px;font-weight:700">${c.nombre}</div><div class="sub">${c.tipo}${c.banco?' · '+c.banco:''}</div></div>
+        <button class="btn btn-d btn-sm" onclick="eliminar('cuentas',${c.id})">✕</button>
+      </div>
+      <div style="font-size:21px;font-weight:800;color:${c.saldo>=0?'var(--green)':'var(--red)'}">${fmt(c.saldo)}</div>
+      <div class="sub">${c.moneda}${c.num?' · '+c.num:''}</div>
+      ${c.desc?`<div class="sub" style="margin-top:4px">${c.desc}</div>`:''}
+    </div>`).join('')}</div>`;
+}
+
+function renderPersonas(){
+  const el=document.getElementById('per-tabla');
+  if(!DB.personas.length){el.innerHTML=emptyM('Sin personas — Agrega staff o freelancers');return;}
+  const total=DB.personas.reduce((s,p)=>s+(p.costo||0),0);
+  el.innerHTML=`
+  <div style="display:flex;justify-content:space-between;padding:9px 10px;background:var(--red-bg);border-radius:8px;margin-bottom:10px">
+    <span style="font-size:12px;font-weight:600">Costo mensual total RRHH</span>
+    <span style="font-size:15px;font-weight:800;color:var(--red)">${fmt(total)}</span>
+  </div>
+  <table class="tbl">
+    <thead><tr><th>Nombre</th><th>Rol</th><th>Tipo</th><th>Costo/mes</th><th>Disponibilidad</th><th></th></tr></thead>
+    <tbody>${DB.personas.map(p=>`<tr>
+      <td><strong>${p.nombre}</strong>${p.email?`<div class="sub">${p.email}</div>`:''}</td>
+      <td>${p.rol||'—'}</td>
+      <td><span class="badge ${p.tipo==='fijo'?'bg-blue':'bg-brand'}">${p.tipo}</span></td>
+      <td style="font-weight:700">${fmt(p.costo||0)}</td>
+      <td><div>${p.disp}%</div><div class="pbar"><div class="pfill" style="width:${p.disp}%;background:${p.disp>=80?'var(--red)':p.disp>=50?'var(--yellow)':'var(--green)'}"></div></div></td>
+      <td><button class="btn btn-d btn-sm" onclick="eliminar('personas',${p.id})">✕</button></td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+function renderCategorias(){
+  const render=(arr,id)=>{
+    const el=document.getElementById(id);
+    if(!arr.length){el.innerHTML=emptyM('Sin categorías');return;}
+    el.innerHTML=arr.map(c=>`
+      <div style="display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--border)">
+        <div style="width:26px;height:26px;border-radius:6px;background:${c.color}22;display:flex;align-items:center;justify-content:center;font-size:13px">${c.icono}</div>
+        <div style="flex:1;font-size:12px;font-weight:600">${c.nombre}</div>
+        <button class="btn btn-d btn-sm" onclick="eliminarCat(${c.id})">✕</button>
+      </div>`).join('');
+  };
+  render(DB.categorias.filter(c=>c.tipo==='ingreso'),'cat-ing');
+  render(DB.categorias.filter(c=>c.tipo==='egreso'),'cat-egr');
+}
+
+function renderConfig(){
+  const e=DB.empresa,c=DB.cfg;
+  document.getElementById('cfg-resumen').innerHTML=`
+  <div class="g3">
+    <div><div style="font-size:9px;font-weight:700;color:var(--gray);margin-bottom:6px;text-transform:uppercase">Empresa AKADEM</div>
+      ${cfgRow('Nombre',e.nombre||'—')}${cfgRow('RUT',e.rut||'—')}${cfgRow('Email',e.email||'—')}
+    </div>
+    <div><div style="font-size:9px;font-weight:700;color:var(--gray);margin-bottom:6px;text-transform:uppercase">Parámetros Flujo</div>
+      ${cfgRow('Caja mínima',fmt(c.cajaMin))}${cfgRow('Runway mínimo',c.runwayMin+' días')}${cfgRow('Margen mín.',c.margenMin+'%')}
+    </div>
+    <div><div style="font-size:9px;font-weight:700;color:var(--gray);margin-bottom:6px;text-transform:uppercase">Proyección</div>
+      ${cfgRow('Horizonte',c.horizonte+' meses')}${cfgRow('Crec. optimista',c.crecOpt+'%/mes')}${cfgRow('Crec. base',c.crecBase+'%/mes')}
+    </div>
+  </div>`;
+  const ut=document.getElementById('users-tabla');
+  ut.innerHTML=`<table class="tbl"><thead><tr><th>Nombre</th><th>Email</th><th>Rol</th><th>Creado</th></tr></thead><tbody>
+  ${DB.usuarios.map(u=>`<tr>
+    <td><strong>${u.nombre} ${u.apellido}</strong></td>
+    <td>${u.email}</td>
+    <td><span class="badge ${u.rol==='admin'?'bg-brand':u.rol==='financiero'?'bg-blue':'bg-gray'}">${u.rol}</span></td>
+    <td class="sub">${u.creado?.slice(0,10)||'—'}</td>
+  </tr>`).join('')}</tbody></table>`;
+}
+
+let alertasActivas=[];
+function generarAlertas(){
+  alertasActivas=[];
+  const caja=totalCaja(),ing=sumar('ingreso','real');
+  const costoRRHH=DB.personas.reduce((s,p)=>s+(p.costo||0),0);
+  const burn=costoRRHH>0?costoRRHH/30:0;
+  const runway=burn>0&&caja>0?Math.round(caja/burn):null;
+  if(DB.cfg.cajaMin>0&&caja<DB.cfg.cajaMin)
+    alertasActivas.push({tipo:'danger',t:'Caja bajo el mínimo',m:`Caja actual ${fmt(caja)} bajo el mínimo de ${fmt(DB.cfg.cajaMin)}.`});
+  if(runway!==null&&runway<DB.cfg.runwayMin)
+    alertasActivas.push({tipo:'danger',t:'Runway insuficiente',m:`Solo ${runway} días de runway. Mínimo: ${DB.cfg.runwayMin} días.`});
+  if(costoRRHH>0&&ing>0){
+    const pct=Math.round(costoRRHH/ing*100);
+    if(pct>DB.cfg.rrhhMax) alertasActivas.push({tipo:'warning',t:'Carga RRHH excesiva',m:`RRHH = ${pct}% de ingresos (máx. ${DB.cfg.rrhhMax}%).`});
+  }
+  DB.proyectos.filter(p=>p.estado==='activo'&&p.margenObj>0&&p.margenObj<DB.cfg.margenMin).forEach(p=>{
+    alertasActivas.push({tipo:'warning',t:`Margen bajo — ${p.codigo}`,m:`${p.nombre}: margen obj. ${p.margenObj}% < mínimo ${DB.cfg.margenMin}%.`});
+  });
+  DB.transacciones.filter(t=>t.tipo==='ingreso'&&t.estado==='vencido').forEach(t=>{
+    alertasActivas.push({tipo:'danger',t:`Factura vencida`,m:`${t.concepto} · ${fmt(t.monto)} · ${t.contraparteNom}`});
+  });
+  updateBadges();
+  const el=document.getElementById('alertas-lista');if(!el)return;
+  if(!alertasActivas.length){el.innerHTML=`<div class="al info"><div style="font-size:14px">✅</div><div><div class="al-t">Sin alertas activas</div>Todos los indicadores dentro de los umbrales.</div></div>`;return;}
+  el.innerHTML=alertasActivas.map(a=>`<div class="al ${a.tipo}"><div style="font-size:14px">${a.tipo==='danger'?'🚨':'⚠️'}</div><div><div class="al-t">${a.t}</div>${a.m}</div></div>`).join('');
+}
+function renderAlertas(){generarAlertas();}
+
+// ===================== EXPORT =====================
+function exportar(tipo){
+  let data=[],headers=[],rows=[];
+  if(tipo==='proyectos'){headers=['Código','Nombre','Cliente','Tipo','Modalidad','Presupuesto','Margen Obj.','Estado','Inicio','Cierre','Ingresos','Gastado'];data=DB.proyectos;rows=data.map(p=>[p.codigo,p.nombre,p.clienteNom,p.tipoNom,p.modalidad,p.presupuesto,p.margenObj,p.estado,p.inicio,p.cierre,p.ingresos,p.gastado]);}
+  if(tipo==='transacciones'){headers=['ID','Fecha','Concepto','Tipo','Monto','Estado','Proyecto','Categoría','Cuenta','Contraparte'];data=DB.transacciones;rows=data.map(t=>[t.id,t.fecha,t.concepto,t.tipo,t.monto,t.estado,t.proyectoCod||t.proyectoNom,t.categoriaNom,t.cuentaNom,t.contraparteNom]);}
+  if(tipo==='clientes'){headers=['ID','Código','Nombre','RUT','Tipo','Contacto','Email','Días Pago'];data=DB.clientes;rows=data.map(c=>[c.id,c.codigo,c.nombre,c.rut,c.tipo,c.contacto,c.email,c.diasPago]);}
+  if(tipo==='oc'){headers=['ID','N°OC','Fecha','Cliente','Monto','Proyecto','Cuenta','Estado','Cond.Pago','Descripción'];data=DB.oc;rows=data.map(o=>[o.id,o.numero,o.fecha,o.clienteNom,o.monto,o.proyectoCod||o.proyectoNom,o.cuentaNom,o.estado,o.condpago,o.descripcion]);}
+  const csv=[headers.join(','),...rows.map(r=>r.map(c=>`"${(c||'').toString().replace(/"/g,'""')}"`).join(','))].join('\n');
+  downloadFile(`akadem_${tipo}_${new Date().toISOString().slice(0,10)}.csv`,csv,'text/csv');
+}
+function exportarJSON(tipo){
+  const data={proyectos:DB.proyectos,transacciones:DB.transacciones,clientes:DB.clientes,oc:DB.oc};
+  downloadFile(`akadem_${tipo}_${new Date().toISOString().slice(0,10)}.json`,JSON.stringify(data[tipo]||[],null,2),'application/json');
+}
+function exportarBackup(){
+  downloadFile(`akadem_backup_${new Date().toISOString().slice(0,10)}.json`,JSON.stringify(DB,null,2),'application/json');
+  toast('✅ Backup descargado');
+}
+function importarBackup(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(data.proyectos&&data.transacciones){
+        DB=data;guardarDB();location.reload();
+      }else toast('Archivo no válido','err');
+    }catch{toast('Error al leer el archivo','err');}
+  };
+  reader.readAsText(file);
+}
+function downloadFile(name,content,type){
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([content],{type}));
+  a.download=name;a.click();
+}
+
+// ===================== ELIMINAR =====================
+function eliminar(tipo,id){
+  if(!confirm('¿Eliminar este registro?'))return;
+  DB[tipo]=DB[tipo].filter(x=>x.id!==id);
+  guardarDB();updateBadges();
+  renderPage(document.querySelector('.nb.on')?.dataset.page||'dashboard');
+}
+function eliminarTx(id){
+  if(!confirm('¿Eliminar esta transacción?'))return;
+  DB.transacciones=DB.transacciones.filter(x=>x.id!==id);
+  guardarDB();renderFlujo();
+}
+function eliminarCat(id){DB.categorias=DB.categorias.filter(x=>x.id!==id);guardarDB();renderCategorias();}
+
+// ===================== HELPERS =====================
+function v(id){return document.getElementById(id)?.value?.trim()||'';}
+function num(id){return parseFloat(document.getElementById(id)?.value)||0;}
+function poblar(id,arr,vk,lk,def){const s=document.getElementById(id);if(!s)return;s.innerHTML=`<option value="">${def}</option>`+arr.map(x=>`<option value="${x[vk]}">${x[lk]}</option>`).join('');}
+function poblarSelectClientes(id){poblar(id,DB.clientes,'id','nombre','— Seleccionar cliente —');}
+function poblarSelectProyectos(id){poblar(id,DB.proyectos,'id','nombre','— Sin proyecto —');}
+function poblarSelectCuentas(id){poblar(id,DB.cuentas,'id','nombre','— Seleccionar cuenta —');}
+function fmt(n){return new Intl.NumberFormat('es-CL',{style:'currency',currency:'CLP',maximumFractionDigits:0}).format(n||0);}
+function fmtK(v){return v>=1e6?(v/1e6).toFixed(1)+'M':v>=1e3?(v/1e3).toFixed(0)+'K':v;}
+function sumar(tipo,estado){return DB.transacciones.filter(t=>t.tipo===tipo&&(estado==='todos'||t.estado===estado)).reduce((s,t)=>s+t.monto,0);}
+function sumarMes(tipo,mes){return DB.transacciones.filter(t=>t.tipo===tipo&&t.fecha?.startsWith(mes)).reduce((s,t)=>s+t.monto,0);}
+function getLast6(){const r=[];for(let i=5;i>=0;i--){const d=new Date();d.setMonth(d.getMonth()-i);r.push(d.toISOString().slice(0,7));}return r;}
+function totalCaja(){return DB.cuentas.reduce((s,c)=>s+(c.saldo||0),0);}
+function updateBadges(){
+  document.getElementById('ct-proy').textContent=DB.proyectos.length;
+  document.getElementById('ct-cli').textContent=DB.clientes.length;
+  document.getElementById('ct-per').textContent=DB.personas.length;
+  document.getElementById('ct-cta').textContent=DB.cuentas.length;
+  document.getElementById('ct-oc').textContent=DB.oc.length;
+  document.getElementById('ct-alert').textContent=alertasActivas.length;
+}
+function tipoColor(tipo){const m={GEST:'#27AE60',LID:'#2980B9',SEG:'#F39C12',NORM:'#8E44AD',OPER:'#16A085',LMS:'#1565C0',DIG:'#E8490F',TECH:'#283593'};return m[tipo]||'#777';}
+function estadoBadge(e){const m={activo:'bg-green',riesgo:'bg-yellow',cerrado:'bg-gray',pausado:'bg-blue',prospecto:'bg-brand'};return `<span class="badge ${m[e]||'bg-gray'}">${e}</span>`;}
+function estadoTxBadge(e){const m={real:'bg-green',proyectado:'bg-blue',comprometido:'bg-yellow',vencido:'bg-red'};return `<span class="badge ${m[e]||'bg-gray'}">${e}</span>`;}
+function estadoOCBadge(e){const m={recibida:'bg-blue',aprobada:'bg-green',facturada:'bg-brand',pagada:'bg-green',rechazada:'bg-red'};return `<span class="badge ${m[e]||'bg-gray'}">${e}</span>`;}
+function emptyM(t){return `<div class="empty"><div class="ei">📭</div><div style="font-size:12px;font-weight:600;color:var(--dark)">${t}</div></div>`;}
+function cfgRow(l,val){return `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border);font-size:11px"><span style="color:var(--gray)">${l}</span><strong>${val}</strong></div>`;}
+function navTo(pg){document.querySelectorAll('.nb').forEach(b=>{if(b.dataset.page===pg)b.click();});}
+function toast(msg,tipo='ok'){
+  const t=document.createElement('div');
+  t.style.cssText=`position:fixed;bottom:20px;right:20px;background:${tipo==='err'?'#E74C3C':'#2D3142'};color:#fff;padding:9px 16px;border-radius:8px;font-size:12px;font-weight:600;z-index:999;box-shadow:0 4px 14px rgba(0,0,0,.2)`;
+  t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);
+}
+</script>
+</body>
+</html>
